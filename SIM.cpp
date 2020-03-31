@@ -88,16 +88,16 @@ void read_compressed(std::string in_file, std::string *compressed,
   std::ifstream file(in_file);
   std::string line;
   bool rd = false;
-  while(!file.eof()) {
+  while (!file.eof()) {
     getline(file, line);
-    if(line[line.length()-1] == '\r') { // check crlf
-      line = line.substr(0, line.length()-1);
+    if (line[line.length() - 1] == '\r') { // check crlf
+      line = line.substr(0, line.length() - 1);
     }
-    if(line == "xxxx") {
+    if (line == "xxxx") {
       rd = true;
       continue;
     }
-    if(rd) {
+    if (rd) {
       dicts->push_back(line);
     } else {
       compressed->append(line);
@@ -106,8 +106,8 @@ void read_compressed(std::string in_file, std::string *compressed,
 };
 
 void read_uncompressed(std::string in_file, std::vector<std::string> *codes,
-                std::vector<std::string> *dicts) {
-  // ::cout << in_file << std::endl;
+                       std::vector<std::string> *dicts) {
+
   std::ifstream file(in_file);
   std::string line;
   int seq = 0;
@@ -137,11 +137,11 @@ void read_uncompressed(std::string in_file, std::vector<std::string> *codes,
 }
 
 void decompress(std::string *code, std::vector<std::string> *dicts) {
-   
+
   std::istringstream iss(*code);
   std::string prev;
   bool fin = false;
-  //std::cerr << "decoding" << std::endl;
+  // std::cerr << "decoding" << std::endl;
   while (!fin) {
     char fmt_t[4];
     iss.get(fmt_t, 4);
@@ -151,8 +151,8 @@ void decompress(std::string *code, std::vector<std::string> *dicts) {
     case fmt_type::RLE: {
       char rep[3];
       iss.get(rep, 3);
-      auto rep_i = std::bitset<2>(rep).to_ullong(); 
-      for(std::size_t i=0; i<=rep_i; ++i) {
+      auto rep_i = std::bitset<2>(rep).to_ullong();
+      for (std::size_t i = 0; i <= rep_i; ++i) {
         std::cout << prev << std::endl;
       }
       break;
@@ -162,7 +162,7 @@ void decompress(std::string *code, std::vector<std::string> *dicts) {
       iss.get(sloc, 6);
       iss.get(bitmask, 5);
       iss.get(di, 4);
-      auto dii = std::bitset<5>(di).to_ullong(); 
+      auto dii = std::bitset<5>(di).to_ullong();
       auto d = dicts->at(dii);
       auto ulld = std::bitset<64>(d).to_ullong();
       auto loc_i = std::bitset<5>(sloc).to_ullong();
@@ -179,7 +179,7 @@ void decompress(std::string *code, std::vector<std::string> *dicts) {
       iss.get(mloc, 6);
       iss.get(di, 4);
       auto loc_i = std::bitset<5>(mloc).to_ullong();
-      auto dii = std::bitset<5>(di).to_ullong(); 
+      auto dii = std::bitset<5>(di).to_ullong();
       unsigned long long diff = 1 << (31 - loc_i);
       auto d = dicts->at(dii);
       auto ulld = std::bitset<64>(d).to_ullong();
@@ -196,7 +196,7 @@ void decompress(std::string *code, std::vector<std::string> *dicts) {
       iss.get(di, 4);
       auto loc_i1 = std::bitset<5>(mloc1).to_ullong();
       auto loc_i2 = std::bitset<5>(mloc2).to_ullong();
-      auto dii = std::bitset<5>(di).to_ullong(); 
+      auto dii = std::bitset<5>(di).to_ullong();
       auto d = dicts->at(dii);
       auto ulld = std::bitset<64>(d).to_ullong();
 
@@ -214,7 +214,7 @@ void decompress(std::string *code, std::vector<std::string> *dicts) {
       iss.get(mloc, 6);
       iss.get(di, 4);
       auto loc_i = std::bitset<5>(mloc).to_ullong();
-      auto dii = std::bitset<5>(di).to_ullong(); 
+      auto dii = std::bitset<5>(di).to_ullong();
       unsigned long long diff = 3 << (30 - loc_i);
       auto d = dicts->at(dii);
       auto ulld = std::bitset<64>(d).to_ullong();
@@ -226,7 +226,7 @@ void decompress(std::string *code, std::vector<std::string> *dicts) {
     case fmt_type::DM: {
       char di[4];
       iss.get(di, 4);
-      auto dii = std::bitset<5>(di).to_ullong(); 
+      auto dii = std::bitset<5>(di).to_ullong();
       prev = dicts->at(dii);
       std::cout << prev << std::endl;
       break;
@@ -246,7 +246,7 @@ void decompress(std::string *code, std::vector<std::string> *dicts) {
       fin = true;
       break;
     }
-  } 
+  }
 }
 
 std::string compress1(std::string *code, std::vector<std::string> *dicts) {
@@ -313,40 +313,30 @@ std::string compress(std::vector<std::string> *codes,
   std::stringstream ss;
   std::string prev = "";
   int rep = -1;
-  // compress_code prev_cc{fmt_type::RLE, 0, 5};
-  std::cerr << "Code:" << std::endl;
+  //std::cerr << "Code:" << std::endl;
   for (std::size_t ci = 0; ci != codes->size(); ++ci) {
-    // TODO: check RLE
     if (codes->at(ci) == prev) {
-      // std::cout << prev << std::endl;
       if (rep == 3) {
         compress_code pc{fmt_type::RLE, (unsigned long)rep, 5};
-        std::cerr << prev << " --> " << pc << std::endl;
         ss << pc;
         rep = -1;
       } else {
         rep += 1;
-        std::cerr << prev << std::endl;
       }
       continue;
     } else {
       if (rep >= 0) {
         compress_code pc{fmt_type::RLE, (unsigned long)rep, 5};
-        std::cerr << prev << " --> " << pc << std::endl;
         ss << pc;
         rep = -1;
       } // else {
       prev = codes->at(ci);
       auto cc = compress1(&prev, dicts);
       ss << cc;
-      std::cerr << prev << " --> " << cc << std::endl;
-      //}
     }
   }
   return ss.str(); //
 }
-
-
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -356,13 +346,13 @@ int main(int argc, char *argv[]) {
   }
 
   if (atoi(argv[1]) == 1) {
+    std::ofstream out("cout.txt");
+    std::cout.rdbuf(out.rdbuf());
     std::vector<std::string> codes;
     std::vector<std::string> dicts;
 
     read_uncompressed("original.txt", &codes, &dicts);
-
     std::string compressed = compress(&codes, &dicts);
-    // std::cout << compressed << std::endl;
     for (std::size_t i = 0; i < compressed.length(); i += 32) {
       std::cout << std::setw(32) << std::setfill('1') << std::left
                 << compressed.substr(i, 32) << std::endl;
@@ -371,18 +361,13 @@ int main(int argc, char *argv[]) {
     for (auto dict : dicts) {
       std::cout << dict << std::endl;
     }
-  } else if(atoi(argv[1]) == 2) {
+  } else if (atoi(argv[1]) == 2) {
+    std::ofstream out("dout.txt");
+    std::cout.rdbuf(out.rdbuf());
     std::string compressed;
     std::vector<std::string> dicts;
     read_compressed("compressed.txt", &compressed, &dicts);
     decompress(&compressed, &dicts);
-    // std::cerr << "read fin, print compressed" << std::endl;
-    // std::cerr << compressed << std::endl;
-
-    // std::cerr << "read fin, print dict" << std::endl;
-    // for (auto dict : dicts) {
-    //   std::cerr << dict << std::endl;
-    // }
   } else {
     std::cerr << "Usage: \t" << argv[0] << " 1 : compression" << std::endl;
     std::cerr << "\t" << argv[0] << " 2 : decompression" << std::endl;
