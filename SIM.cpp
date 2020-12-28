@@ -32,16 +32,16 @@ struct seq_fre
 };
 
 enum fmt_type : unsigned long long
-{
-  RLE,
-  BITMASK,
-  ONE_MM,
-  TWO_CMM,
-  TWO_MM,
-  DM,
-  ORIG,
-  FIN
-};
+  {
+    RLE,
+    BITMASK,
+    ONE_MM,
+    TWO_CMM,
+    TWO_MM,
+    DM,
+    ORIG,
+    FIN
+  };
 struct compress_code
 {
   fmt_type fmt;
@@ -57,36 +57,36 @@ struct compress_code
   friend std::ostream& operator<<(std::ostream& os, const compress_code& cc)
   {
     switch (cc.fmt) {
-      case fmt_type::RLE: {
-        os << std::bitset<5>(cc.cc);
-        break;
-      }
-      case fmt_type::BITMASK: {
-        os << std::bitset<15>(cc.cc);
-        break;
-      }
-      case fmt_type::ONE_MM: {
-        os << std::bitset<11>(cc.cc);
-        break;
-      }
-      case fmt_type::TWO_MM: {
-        os << std::bitset<16>(cc.cc);
-        break;
-      }
-      case fmt_type::TWO_CMM: {
-        os << std::bitset<11>(cc.cc);
-        break;
-      }
-      case fmt_type::DM: {
-        os << std::bitset<6>(cc.cc);
-        break;
-      }
-      case fmt_type::ORIG: {
-        os << std::bitset<35>(cc.cc);
-        break;
-      }
-      default:
-        break;
+    case fmt_type::RLE: {
+      os << std::bitset<5>(cc.cc);
+      break;
+    }
+    case fmt_type::BITMASK: {
+      os << std::bitset<15>(cc.cc);
+      break;
+    }
+    case fmt_type::ONE_MM: {
+      os << std::bitset<11>(cc.cc);
+      break;
+    }
+    case fmt_type::TWO_MM: {
+      os << std::bitset<16>(cc.cc);
+      break;
+    }
+    case fmt_type::TWO_CMM: {
+      os << std::bitset<11>(cc.cc);
+      break;
+    }
+    case fmt_type::DM: {
+      os << std::bitset<6>(cc.cc);
+      break;
+    }
+    case fmt_type::ORIG: {
+      os << std::bitset<35>(cc.cc);
+      break;
+    }
+    default:
+      break;
     }
     return os;
   }
@@ -167,103 +167,103 @@ decompress(std::string* code, std::vector<std::string>* dicts)
     fmt_type ft = static_cast<fmt_type>(std::bitset<3>(fmt_t).to_ullong());
 
     switch (ft) {
-      case fmt_type::RLE: {
-        char rep[3];
-        iss.get(rep, 3);
-        auto rep_i = std::bitset<2>(rep).to_ullong();
-        for (std::size_t i = 0; i <= rep_i; ++i) {
-          std::cout << prev << std::endl;
-        }
-        break;
+    case fmt_type::RLE: {
+      char rep[3];
+      iss.get(rep, 3);
+      auto rep_i = std::bitset<2>(rep).to_ullong();
+      for (std::size_t i = 0; i <= rep_i; ++i) {
+        std::cout << prev << std::endl;
       }
-      case fmt_type::BITMASK: {
-        char sloc[6], bitmask[5], di[4];
-        iss.get(sloc, 6);
-        iss.get(bitmask, 5);
-        iss.get(di, 4);
-        auto dii = std::bitset<5>(di).to_ullong();
-        auto d = dicts->at(dii);
-        auto ulld = std::bitset<64>(d).to_ullong();
-        auto loc_i = std::bitset<5>(sloc).to_ullong();
-        auto bm = std::bitset<5>(bitmask).to_ullong();
-        unsigned long long diff = bm << (28 - loc_i);
+      break;
+    }
+    case fmt_type::BITMASK: {
+      char sloc[6], bitmask[5], di[4];
+      iss.get(sloc, 6);
+      iss.get(bitmask, 5);
+      iss.get(di, 4);
+      auto dii = std::bitset<5>(di).to_ullong();
+      auto d = dicts->at(dii);
+      auto ulld = std::bitset<64>(d).to_ullong();
+      auto loc_i = std::bitset<5>(sloc).to_ullong();
+      auto bm = std::bitset<5>(bitmask).to_ullong();
+      unsigned long long diff = bm << (28 - loc_i);
 
-        auto dc = ulld ^ diff;
-        prev = std::bitset<32>(dc).to_string();
-        std::cout << prev << std::endl;
-        break;
-      }
-      case fmt_type::ONE_MM: {
-        char mloc[6], di[4];
-        iss.get(mloc, 6);
-        iss.get(di, 4);
-        auto loc_i = std::bitset<5>(mloc).to_ullong();
-        auto dii = std::bitset<5>(di).to_ullong();
-        unsigned long long diff = 1 << (31 - loc_i);
-        auto d = dicts->at(dii);
-        auto ulld = std::bitset<64>(d).to_ullong();
-        auto dc = ulld ^ diff;
-        prev = std::bitset<32>(dc).to_string();
-        std::cout << prev << std::endl;
+      auto dc = ulld ^ diff;
+      prev = std::bitset<32>(dc).to_string();
+      std::cout << prev << std::endl;
+      break;
+    }
+    case fmt_type::ONE_MM: {
+      char mloc[6], di[4];
+      iss.get(mloc, 6);
+      iss.get(di, 4);
+      auto loc_i = std::bitset<5>(mloc).to_ullong();
+      auto dii = std::bitset<5>(di).to_ullong();
+      unsigned long long diff = 1 << (31 - loc_i);
+      auto d = dicts->at(dii);
+      auto ulld = std::bitset<64>(d).to_ullong();
+      auto dc = ulld ^ diff;
+      prev = std::bitset<32>(dc).to_string();
+      std::cout << prev << std::endl;
 
-        break;
-      }
-      case fmt_type::TWO_MM: {
-        char mloc1[6], mloc2[6], di[4];
-        iss.get(mloc1, 6);
-        iss.get(mloc2, 6);
-        iss.get(di, 4);
-        auto loc_i1 = std::bitset<5>(mloc1).to_ullong();
-        auto loc_i2 = std::bitset<5>(mloc2).to_ullong();
-        auto dii = std::bitset<5>(di).to_ullong();
-        auto d = dicts->at(dii);
-        auto ulld = std::bitset<64>(d).to_ullong();
+      break;
+    }
+    case fmt_type::TWO_MM: {
+      char mloc1[6], mloc2[6], di[4];
+      iss.get(mloc1, 6);
+      iss.get(mloc2, 6);
+      iss.get(di, 4);
+      auto loc_i1 = std::bitset<5>(mloc1).to_ullong();
+      auto loc_i2 = std::bitset<5>(mloc2).to_ullong();
+      auto dii = std::bitset<5>(di).to_ullong();
+      auto d = dicts->at(dii);
+      auto ulld = std::bitset<64>(d).to_ullong();
 
-        unsigned long long diff1 = 1 << (31 - loc_i1);
-        unsigned long long diff2 = 1 << (31 - loc_i2);
+      unsigned long long diff1 = 1 << (31 - loc_i1);
+      unsigned long long diff2 = 1 << (31 - loc_i2);
 
-        auto dc = ulld ^ diff1 ^ diff2;
-        prev = std::bitset<32>(dc).to_string();
-        std::cout << prev << std::endl;
+      auto dc = ulld ^ diff1 ^ diff2;
+      prev = std::bitset<32>(dc).to_string();
+      std::cout << prev << std::endl;
 
-        break;
-      }
-      case fmt_type::TWO_CMM: {
-        char mloc[6], di[4];
-        iss.get(mloc, 6);
-        iss.get(di, 4);
-        auto loc_i = std::bitset<5>(mloc).to_ullong();
-        auto dii = std::bitset<5>(di).to_ullong();
-        unsigned long long diff = 3 << (30 - loc_i);
-        auto d = dicts->at(dii);
-        auto ulld = std::bitset<64>(d).to_ullong();
-        auto dc = ulld ^ diff;
-        prev = std::bitset<32>(dc).to_string();
-        std::cout << prev << std::endl;
-        break;
-      }
-      case fmt_type::DM: {
-        char di[4];
-        iss.get(di, 4);
-        auto dii = std::bitset<5>(di).to_ullong();
-        prev = dicts->at(dii);
-        std::cout << prev << std::endl;
-        break;
-      }
-      case fmt_type::ORIG: {
-        char orig_c[33];
-        iss.get(orig_c, 33);
-        prev = std::string(orig_c);
-        std::cout << prev << std::endl;
-        break;
-      }
-      case fmt_type::FIN: {
-        fin = true;
-        break;
-      }
-      default:
-        fin = true;
-        break;
+      break;
+    }
+    case fmt_type::TWO_CMM: {
+      char mloc[6], di[4];
+      iss.get(mloc, 6);
+      iss.get(di, 4);
+      auto loc_i = std::bitset<5>(mloc).to_ullong();
+      auto dii = std::bitset<5>(di).to_ullong();
+      unsigned long long diff = 3 << (30 - loc_i);
+      auto d = dicts->at(dii);
+      auto ulld = std::bitset<64>(d).to_ullong();
+      auto dc = ulld ^ diff;
+      prev = std::bitset<32>(dc).to_string();
+      std::cout << prev << std::endl;
+      break;
+    }
+    case fmt_type::DM: {
+      char di[4];
+      iss.get(di, 4);
+      auto dii = std::bitset<5>(di).to_ullong();
+      prev = dicts->at(dii);
+      std::cout << prev << std::endl;
+      break;
+    }
+    case fmt_type::ORIG: {
+      char orig_c[33];
+      iss.get(orig_c, 33);
+      prev = std::string(orig_c);
+      std::cout << prev << std::endl;
+      break;
+    }
+    case fmt_type::FIN: {
+      fin = true;
+      break;
+    }
+    default:
+      fin = true;
+      break;
     }
   }
 }
@@ -294,20 +294,20 @@ compress1(std::string* code, std::vector<std::string>* dicts)
       } else { // 001 , get the bitmask
         unsigned long bm = diff >> (32 - 4 - diff_ones[0]);
         unsigned long cc = (fmt_type::BITMASK << (5 + 4 + 3)) ^
-                           (diff_ones[0] << (4 + 3)) ^ (bm << 3) ^ dict_idx;
+          (diff_ones[0] << (4 + 3)) ^ (bm << 3) ^ dict_idx;
         ccs.push_back(compress_code{ fmt_type::BITMASK, cc, 15 });
       }
     } else if (ds == 2) {
       auto distance = diff_ones[1] - diff_ones[0];
       if (distance > 4) { // 100
         unsigned long cc = (fmt_type::TWO_MM << (5 + 5 + 3)) ^
-                           (diff_ones[0] << (5 + 3)) ^ (diff_ones[1] << 3) ^
-                           dict_idx;
+          (diff_ones[0] << (5 + 3)) ^ (diff_ones[1] << 3) ^
+          dict_idx;
         ccs.push_back(compress_code{ fmt_type::TWO_MM, cc, 16 });
       } else if (distance > 1) { // 001 get bitmask
         unsigned long bm = diff >> (32 - 4 - diff_ones[0]);
         unsigned long cc = (fmt_type::BITMASK << (5 + 4 + 3)) ^
-                           (diff_ones[0] << (4 + 3)) ^ (bm << 3) ^ dict_idx;
+          (diff_ones[0] << (4 + 3)) ^ (bm << 3) ^ dict_idx;
         ccs.push_back(compress_code{ fmt_type::BITMASK, cc, 15 });
       } else { // distance==1, 011
         unsigned long cc =
